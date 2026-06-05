@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "185019085442",
+    "project_id": "outfitory",
+    "storage_bucket": "outfitory.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185019085442:android:5e5cb09d6f5306f7b87a9b",
+        "android_client_info": {
+          "package_name": "com.example.outfitory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdh5XIMiz5sFDeBXQyJjymOUzwVEeGwzM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

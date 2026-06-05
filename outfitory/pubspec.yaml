@@ -1,0 +1,26 @@
+name: outfitory
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  cloud_firestore: ^6.5.0
+  firebase_auth: ^6.5.2
+  firebase_core: ^4.10.0
+  firebase_storage: ^13.4.2
+  flutter:
+    sdk: flutter
+  geolocator: ^14.0.2
+  google_maps_flutter: ^2.17.1
+  image_picker: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
