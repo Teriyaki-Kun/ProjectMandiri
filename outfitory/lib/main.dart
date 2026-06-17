@@ -1,65 +1,56 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; // Tambahkan ini
+import 'firebase_options.dart'; // Tambahkan ini (file hasil dari flutterfire configure)
+import 'package:outfitory/screens/home screen/splash_screen.dart';
 import 'package:outfitory/firebase_options.dart';
-import 'package:outfitory/widgets/navbar.dart';
-import 'screens/home_screen.dart';
-import 'screens/post_screen.dart';
-import 'screens/favorite_screen.dart';
-import 'screens/profile_screen.dart';
 
+// 1. Buat Notifier global untuk menampung status tema aplikasi
+final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.light);
 
-void main() async {
+Future<void> main() async {
+  // Tambahkan baris ini agar binding siap sebelum inisialisasi Firebase
   WidgetsFlutterBinding.ensureInitialized();
-
+  
+  // Inisialisasi Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const StyleSpotApp());
+  runApp(const MyApp());
 }
 
-class StyleSpotApp extends StatelessWidget {
-  const StyleSpotApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Outfitory',
-      home: const MainScreen(),
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int currentIndex = 0;
-
-  final List<Widget> pages = [
-    HomeScreen(),
-    const PostScreen(),
-    const FavoriteScreen(),
-    const ProfileScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[currentIndex],
-      bottomNavigationBar: Navbar(
-        currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-      ),
+    // 2. Bungkus dengan ValueListenableBuilder agar aplikasi langsung merespon saat tema diganti
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeMode,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'Outfitory',
+          debugShowCheckedModeBanner: false,
+          
+          // Pengaturan skema warna tema terang (Light)
+          themeMode: currentMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: Colors.grey.shade50,
+          ),
+          
+          // Pengaturan skema warna tema gelap (Dark)
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            cardColor: const Color(0xFF1E1E1E),
+          ),
+          
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }
