@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Tambahkan ini
-import 'firebase_options.dart'; // Tambahkan ini (file hasil dari flutterfire configure)
+import 'package:firebase_core/firebase_core.dart'; 
+import 'firebase_options.dart'; 
 import 'package:outfitory/screens/home screen/splash_screen.dart';
 import 'package:outfitory/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 
-// 1. Buat Notifier global untuk menampung status tema aplikasi
 final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.light);
 
 Future<void> main() async {
-  // Tambahkan baris ini agar binding siap sebelum inisialisasi Firebase
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Inisialisasi Firebase
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await FirebaseAuth.instance.signOut(); 
   runApp(const MyApp());
 }
 

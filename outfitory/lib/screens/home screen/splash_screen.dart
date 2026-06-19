@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart'; // Impor Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outfitory/screens/main_screen.dart';
+import 'package:outfitory/screens/login screen/login_screen.dart'; // Sesuaikan path ke LoginScreen Anda
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,20 +12,32 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-// Tambahkan TickerProviderStateMixin agar kelas ini bisa mengontrol animasi berputar
+// Menggunakan TickerProviderStateMixin untuk mengontrol animasi denyut (scale)
 class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late final AnimationController _rotationController;
+  late final AnimationController _scaleController;
+  late final Animation<double> _scaleAnimation;
   double _textOpacity = 0.0;
 
   @override
   void initState() {
     super.initState();
 
-    // 1. Inisialisasi pengontrol animasi putar (durasi 1 putaran penuh = 4 detik)
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 4),
+    // 1. Inisialisasi pengontrol animasi denyut (durasi 1.2 detik per denyut)
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
-    )..repeat(); // Fungsi ..repeat() membuat logo berputar terus-menerus tanpa henti
+    );
+
+    // Membuat kurva animasi membesar-mengecil yang halus (dari 0.93 hingga 1.07 dari ukuran asli)
+      _scaleAnimation = Tween<double>(begin: 0.93, end: 1.07).animate(
+        CurvedAnimation(
+          parent: _scaleController,
+          curve: Curves.easeInOut,
+        ),
+      );
+
+      // Mulai animasi berulang pada controller (repeat ada di AnimationController, bukan Animation)
+      _scaleController.repeat(reverse: true);
 
     // 2. Beri jeda singkat untuk memunculkan teks judul secara halus (fade-in)
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -34,12 +48,22 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       }
     });
 
-    // 3. Timer otomatis pindah halaman ke MainScreen setelah 3 detik
+    // 3. Timer otomatis 3 detik dengan pengecekan sesi login Firebase Auth
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user != null) {
+          // Jika pengguna sudah login sebelumnya, arahkan ke halaman utama
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          // Jika belum login atau setelah dipaksa logout, wajib ke Halaman Login
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
       }
     });
   }
@@ -47,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     // Wajib di-dispose agar tidak terjadi kebocoran memori (memory leak)
-    _rotationController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
@@ -71,9 +95,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ANIMASI LOGO BERPUTAR SECARA LOOP (Mirip JelajahYuk)
-              RotationTransition(
-                turns: _rotationController, // Mengontrol perputaran roda logo
+              // PERUBAHAN DI SINI: Menggunakan ScaleTransition agar logo berdenyut lembut
+              ScaleTransition(
+                scale: _scaleAnimation, // Mengontrol perbesaran logo
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(

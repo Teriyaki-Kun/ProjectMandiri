@@ -1,13 +1,13 @@
+import 'dart:convert';  
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outfitory/main.dart'; // Mengimpor appThemeMode dari main.dart
+import 'package:outfitory/main.dart'; 
 import 'package:outfitory/screens/login screen/login_screen.dart';
 import 'package:outfitory/screens/profile screens/profile_edit_screen.dart';
 import 'package:outfitory/screens/profile screens/security_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  // Menerima notifier tema, default menggunakan variabel global appThemeMode
   final ValueNotifier<ThemeMode> themeModeNotifier;
 
   ProfileScreen({super.key, ValueNotifier<ThemeMode>? themeModeNotifier})
@@ -21,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _username = 'Fashionista';
   String _bio = 'Fashion Enthusiast | Loving OOTD Styles';
   String _email = 'user@outfitory.com';
+  String? _profileImageBase64;  
 
   @override
   void initState() {
@@ -34,10 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Helper untuk mengecek apakah aplikasi sedang dalam mode gelap
   bool get _isDarkMode => widget.themeModeNotifier.value == ThemeMode.dark;
 
-  // Fungsi pengubah status tema saat sakelar ditekan
   void _toggleTheme(bool value) {
     setState(() {
       widget.themeModeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
@@ -46,7 +45,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Penyesuaian warna teks & background mengikuti kondisi tema
     final textColor = _isDarkMode ? Colors.white : Colors.black87;
     final cardColor = _isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
 
@@ -69,10 +67,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Center(
               child: Stack(
                 children: [
+                  // MODIFIKASI: Cek Apakah Ada Foto Base64, Jika Ada Tampilkan Menggunakan MemoryImage
                   CircleAvatar(
                     radius: 55,
                     backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.1),
-                    child: const Icon(Icons.person, size: 65, color: Color(0xFF8B5CF6)),
+                    backgroundImage: _profileImageBase64 != null && _profileImageBase64!.startsWith('data:image')
+                        ? MemoryImage(base64Decode(_profileImageBase64!.split(',')[1]))
+                        : null,
+                    child: _profileImageBase64 == null
+                        ? const Icon(Icons.person, size: 65, color: Color(0xFF8B5CF6))
+                        : null,
                   ),
                   Positioned(
                     bottom: 0,
@@ -91,7 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Identitas User
             Text(
               _username,
               style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
@@ -104,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 25),
 
-            // Opsi Menu Informasi & Keamanan
             _buildMenuCard(
               context,
               icon: Icons.email_outlined,
@@ -133,26 +135,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: "Perbarui nama panggilan dan bio fashion",
               cardColor: cardColor,
               onTap: () async {
+                // MODIFIKASI: Mengirim data foto profil lama saat pindah halaman
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfileEditScreen(
                       initialUsername: _username,
                       initialBio: _bio,
+                      initialImage: _profileImageBase64,   
                     ),
                   ),
                 );
 
+                // MODIFIKASI: Menangkap data foto profil baru dan meng-update state layar utama
                 if (result != null && result is ProfileEditResult) {
                   setState(() {
                     _username = result.username;
                     _bio = result.bio;
+                    _profileImageBase64 = result.profileImage;
                   });
                 }
               },
             ),
 
-            // TAMBAHAN: Card Pengaturan Fitur Dark Mode
             Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 0,
@@ -186,7 +191,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             
             const SizedBox(height: 20),
 
-            // Tombol Keluar / Logout
             _buildLogoutButton(context),
           ],
         ),
